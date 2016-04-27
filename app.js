@@ -1,34 +1,54 @@
-var GpioStream = require('gpio-stream');
-var http = require('http');
-var button = GpioStream.readable(17);
-var led = GpioStream.writable(18);
+var Gpio = require('onoff').Gpio;
 var express = require('express');
-var path = require('path');
-var logger = require('morgan');
-var bodyParser = require('body-parser');
 var app = express();
-var server = http.createServer(app);
+var settings = require('./settings');
+var port = settings.port;
 
-app.use(logger('common'));
-app.use(bodyParser.json());
+var led = new Gpio(18, 'out');
+
+// establish streams for RaspPi components
+// var GpioStream = require('gpio-stream');
+// var button = GpioStream.readable(17);
+// var led = GpioStream.writable(18);
+
+// set up logging middleware
+// var logger = require('morgan');
+// app.use(logger('common'));
+
+// set up body parser middleware POST data
+var bodyParser = require('body-parser');
+app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({extended:false}));
 
-// set the routes
-//var appRouter = require('./app_router');
-//    appRouter(app);
+// pipe button presses to led
+// var write_stream = button.pipe(led);
+// pipe button presses to stdout
+// button.pipe(process.stdout);
 
-//module.exports = app;
-
-
-app.post('/', function(req, res) {
-  console.log(req.body);
-  res.send(200);
+// API routes
+app.post('/plants', function(req,res) {
+  console.log('new plant:');
 });
 
-server.listen(process.env.PORT, process.env.IP);
-var write_stream = button.pipe(led);
-// pipe button presses to stdout
-button.pipe(process.stdout);
+app.get('/', function(req,res){
+   // res.send("Welcome to Nathaniel's Plant Monitoring System");
+   res.sendFile(__dirname + '/public/index.html');
+   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+   console.log('Status : ' + led.readSync() + ' - ip : ' + ip);
+   led.writeSync(0);
+});
+
+// Change the status of LED via API based on parameters sent by Button
+app.get('/led/:state', function (req, res) {
+    led.writeSync(parseInt(req.params.state));
+    res.send('Status ' + req.params.state);
+});
+
+// CREATE SERVER
+app.listen(port, function(){
+ console.log('Server started, listening on port: ',port);
+});
+
 
 //http.createServer(function (req, res) {
 //  res.setHeader('Content-Type', 'text/html');
