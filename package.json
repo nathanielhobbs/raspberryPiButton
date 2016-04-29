@@ -13,6 +13,7 @@
     "express": "^4.12.4",
     "gpio-stream": "^1.0.17",
     "morgan": "~1.5.1",
+    "onoff": "^1.0.4",
     "request": "^2.69.0",
     "useragent": "^2.1.9",
     "yamlparser": "0.0.2"
