@@ -31,15 +31,27 @@ app.set('view engine', 'ejs');
 // pipe button presses to stdout
 // button.pipe(process.stdout);
 
+app.post('/', function(req, res){
+  console.log('recieved post:',JSON.stringify(req.body))
+})
+
 // API routes
 app.post('/plants', function(req,res) {
-  console.log('new plant:');
+  if(req.body.moisture)
+  console.log('new plant reading:', req.body.moisture);
   console.log(JSON.stringify(req.body))
-  if(parseInt(req.body.name) === 1){
+});
+
+app.post('/light', function(req,res) {
+  console.log('new light reading:');
+  console.log(JSON.stringify(req.body))
+  if(req.body.state && parseInt(req.body.state) === 1){
     led.writeSync(1);
+    res.status(200).send({light:'on'});
   }
-  else if(parseInt(req.body.name) === 0){
+  else if(req.body.state && parseInt(req.body.state) === 0){
     led.writeSync(0);
+    res.status(200).send({light:'off'});
   }
 });
 
